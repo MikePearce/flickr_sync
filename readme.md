@@ -27,8 +27,7 @@ The script will store the photos it has uploaded, as well as any sets or collect
 Unfortunately, creating and editing collections is done via undocumented API features. While the editCollections method works well for adding sets to collections, createCollection works inconsistently, so, in order for this to work, you'll need to have already created your collections (in this instance, 2013 and 2014).
 
 # How to use it.
-- Clone, or export the repo to your local machine
-- Clone or export the phpFlickr (www.phpflickr.com) repo to the phpFlickr/ directory
+- Clone the repo to your local machine
 - Setup your api details and other config in config.php (copy config.example.php).
 - Run `%> php -f sync.php get_collections` this will access the API and store all your collections and sets in the db
 - Run `%> php -f sync.php upload_photos` this will upload all your photos.
