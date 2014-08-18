@@ -1,0 +1,1 @@
+This folder should contain your sqlite3 db called 'flickr_sync' after you've run get_collections
