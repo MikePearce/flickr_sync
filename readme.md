@@ -30,7 +30,7 @@ Unfortunately, creating and editing collections is done via undocumented API fea
 - Clone the repo to your local machine
 - Setup your api details and other config in config.php (copy config.example.php).
 - Run `%> php -f sync.php get_collections` this will access the API and store all your collections and sets in the db
-- Run `%> php -f sync.php upload_photos` this will upload all your photos.
+- Run `%> php -f sync.php upload_photos` this will do the above, then upload all your photos.
 - Wait.
 
 If all goes well, you should have your photos uploaded, in the correct sets and in the correct collections. It will also save the original filename as a tag, should you need it later.

@@ -88,6 +88,8 @@
          */
         public function storeCollectionsAndSets() {
 
+            $this->log("---- Beginning Download of collections and sets ----\n");
+
 			// Clear collections and sets
 			$this->storage->clearData(FALSE);
 
@@ -129,6 +131,8 @@
          * Run through the specified directory and upload the photos
          */
         public function uploadPhotos() {
+
+            $this->storeCollectionsAndSets();
 
 			$this->log("---- Beginning Upload ----\n");
 
