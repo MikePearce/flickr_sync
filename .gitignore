@@ -1,3 +1,4 @@
+*.txt
 db/flickr_sync
 .DS_Store
 .idea/

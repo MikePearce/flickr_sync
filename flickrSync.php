@@ -47,6 +47,16 @@
 		 **/
 		public $debug;
 
+        /**
+         * @var Array of directories to ignore
+         */
+        public $ignores;
+
+        /**
+         * @var file that we write the logs to
+         */
+        public $logfile;
+
 		/**
 		 * Setup the class vars
 		 * @var $stoage Picturestorage
@@ -61,8 +71,19 @@
 			$this->log = array();
 			$this->debug = "low";
             $this->setPrivacy();
+            $this->setIgnores();
+            $this->setLogFile();
 
 		}
+
+        public function setLogFile($logfile = 'log.txt') {
+            $time = time();
+            $this->logfile = $time."-". $logfile;
+            // Create the file
+            $fp = fopen('data.txt', 'a');
+            fwrite($fp, '-- New Log: '. $time ." --\n");
+            fclose($fp);
+        }
 
         /**
          * @param string $root The root of photos you want to upload
@@ -70,6 +91,13 @@
         public function setPhotoRoot($root = "../") {
 			$this->photoRoot = $root;
 		}
+
+        /**
+         * @param $ignores Array of directories to ignore
+         */
+        public function setIgnores($ignores = array()) {
+            $this->ignores = $ignores;
+        }
 
         /**
          * What kind of privacy is on the photo?
@@ -81,6 +109,20 @@
             $this->public = $p;
             $this->friends = $f;
             $this->family = $fam;
+        }
+
+        /**
+         * Return all captured errors as string
+         * @return string of errors
+         */
+        public function getErrors() {
+            $errors = "";
+            if (is_array($this->errors)) {
+                foreach($this->errors AS $error) {
+                    $errors .= $error ."\n";
+                }
+            }
+            return $errors;
         }
 
         /**
@@ -138,7 +180,7 @@
 
 			// Now we need to iterate through the folders
 			$photos = new RecursiveDirectoryIterator($this->photoRoot);
-			$filetypes = array("jpg");
+			$filetypes = array("jpg", "mov", "3gp", "avi");
 
 			$collections = $no_flickr_collection = $collections_and_sets = array();
 			$sets = array();
@@ -151,7 +193,19 @@
 					$file = str_replace($this->photoRoot, "", $file);
 
 					// For each file break it into ../[collection]/[set]/[photo]
-					list($collection, $set, $photo) = explode("/", $file);
+                    $file_array = explode("/", $file);
+
+                    if (count($file_array) == 3) {
+                        list($collection, $set, $photo) = $file_array;
+                    }
+                    else {
+                        list($set, $photo) = $file_array;
+                        $collection = "Misc";
+                    }
+
+
+                    // If this is an ignored connection, go to the next one
+                    if (in_array($collection, $this->ignores)) continue;
 
 					// Have we already uploaded the photo?
 					if ($this->storage->photoUploaded($photo)) continue;
@@ -197,7 +251,7 @@
 			// Now, add the sets to teh collections
 			$this->log("---- Adding Sets to Collections ----\n");
 			$this->addSetsToCollections($collections_and_sets);
-			$this->log("---- Adding Sets to Complte ----\n\n");
+			$this->log("---- Adding sets to collections complete ----\n\n");
 
 			// If we had unknown folders (folders that aren't sets) let the user know.
 			if (!empty($no_flickr_collection)) {
@@ -343,5 +397,12 @@
 			$this->log[] = $text;
             if ($error) $this->errors[] = $text;
 			print $text ."\n";
+            $this->writeLogFile($text ."\n");
 		}
+
+        private function writeLogFile($log) {
+            $fp = fopen($this->logfile, 'a');
+            fwrite($fp, $log);
+            fclose($fp);
+        }
 	}

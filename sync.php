@@ -10,12 +10,12 @@ if (isset($argv[1])) {
 			$job = "get_collections";
 			break;
 		default:
-			print "Not sure what you want me to do, either: check_uploads, get_collections";
+			print "Not sure what you want me to do, either: upload_photos, get_collections";
 			exit(1);
 	}	
 }
 else {
-	print "Not sure what you want me to do, either: check_uploads, get_collections";
+	print "Not sure what you want me to do, either: upload_photos, get_collections";
 	exit(1);
 }
 
@@ -36,6 +36,7 @@ $sync = new FlickrSync(
 );
 
 $sync->setPhotoRoot($directory);
+$sync->setIgnores($ignore_dirs);
 $sync->setPrivacy($public, $friend, $family);
 
 /**
@@ -52,5 +53,6 @@ else if ($job == "get_collections") {
 	print "Pulled collections and sets\n";
 }
 
-
-print "fin.\n";
+print "\n\n--- These were the errors: \n";
+print $sync->getErrors();
+print "\n\nfin.\n";

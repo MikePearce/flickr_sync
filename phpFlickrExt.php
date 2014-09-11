@@ -52,7 +52,7 @@ class phpFlickrExt extends phpFlickr {
             }
 
             $photo = realpath($photo);
-            $args['photo'] = new CurlFile($photo, 'image/png', $photo);
+            $args['photo'] = new CurlFile($photo, mime_content_type($photo), $photo);
 
 
             $curl = curl_init($this->upload_endpoint);
@@ -126,7 +126,7 @@ class phpFlickrExt extends phpFlickr {
             }
 
             $photo = realpath($photo);
-            $args['photo'] = new CurlFile($photo, 'image/png', $photo);
+            $args['photo'] = new CurlFile($photo, mime_content_type($photo), $photo);
 
 
             $curl = curl_init($this->upload_endpoint);
