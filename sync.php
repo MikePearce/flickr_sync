@@ -12,10 +12,11 @@ if (isset($argv[1])) {
 		default:
 			print "Not sure what you want me to do, either: upload_photos, get_collections";
 			exit(1);
-	}	
+	}
+
 }
 else {
-	print "Not sure what you want me to do, either: upload_photos, get_collections";
+	print "Use like so %> php -f sync.php [upload_photos|get_collections] [(optional)specific collection to upload]";
 	exit(1);
 }
 
@@ -37,6 +38,7 @@ $sync = new FlickrSync(
 
 $sync->setPhotoRoot($directory);
 $sync->setIgnores($ignore_dirs);
+if (isset($argv[2])) $sync->setSpecificCollection($argv[2]);
 $sync->setPrivacy($public, $friend, $family);
 
 /**
