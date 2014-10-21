@@ -53,6 +53,11 @@
         public $ignores;
 
         /**
+         * @var mixed string|bool collection to upload specifically (ignoring others)
+         */
+        public $specificCollection;
+
+        /**
          * @var file that we write the logs to
          */
         public $logfile;
@@ -76,6 +81,17 @@
 
 		}
 
+        /**
+         * @param mixed $collection Contains specific collection to upload
+         */
+        public function setSpecificCollection($collection = false) {
+            $this->log("---- Only doing ". $collection ." ----\n");
+            $this->specificCollection = $collection;
+        }
+
+        /**
+         * @param string $logfile string to where logfile is stored
+         */
         public function setLogFile($logfile = 'log.txt') {
             $time = time();
             $this->logfile = $time."-". $logfile;
@@ -169,6 +185,40 @@
 			}
 		}
 
+        public function splitPath($file, $part) {
+
+            // First, remove the root
+            $file = str_replace($this->photoRoot, "", $file);
+
+            // For each file break it into ../[collection]/[set]/[photo]
+            $file_array = explode("/", $file);
+
+            if (count($file_array) == 3) {
+                list($collection, $set, $photo) = $file_array;
+            }
+            // It needs to be three, otherwise we need to error.
+            else {
+                $this->log('Folder structure ('. $file .') is not correct', TRUE, false);
+                return false;
+            }
+
+            switch($part) {
+                case 'collection':
+                    $return = $collection;
+                    break;
+                case 'set':
+                    $return = $set;
+                    break;
+                case 'photo':
+                    $return = $photo;
+                    break;
+                default:
+                    $this->log('Unknown part: '. $part, TRUE);
+            }
+
+            return $return;
+        }
+
         /**
          * Run through the specified directory and upload the photos
          */
@@ -189,23 +239,17 @@
 				$filetype = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if (in_array(strtolower($filetype), $filetypes)) {
 
-					// First, remove the root
-					$file = str_replace($this->photoRoot, "", $file);
+                    // Split the file path into the different parts (unless we can't)
+                    if (!$collection = $this->splitPath($file, 'collection')) continue;
 
-					// For each file break it into ../[collection]/[set]/[photo]
-                    $file_array = explode("/", $file);
-
-                    if (count($file_array) == 3) {
-                        list($collection, $set, $photo) = $file_array;
-                    }
-                    else {
-                        list($set, $photo) = $file_array;
-                        $collection = "Misc";
-                    }
-
-
-                    // If this is an ignored connection, go to the next one
+                    // If this is an ignored collection, go to the next one
                     if (in_array($collection, $this->ignores)) continue;
+
+                    // If this isn't a specified collection, go to the next one
+                    if (isset($this->specificCollection) AND $this->specificCollection !== $collection) continue;
+
+                    // It's ON! Let's get the photo
+                    $photo = $this->splitPath($file, 'photo');
 
 					// Have we already uploaded the photo?
 					if ($this->storage->photoUploaded($photo)) continue;
@@ -218,6 +262,9 @@
 						}
 						continue;
 					}
+
+                    // Get the set
+                    $set = $this->splitPath($file, 'set');
 
 					// We have a collection, do we have a set?
 					if ( !$set_id = $this->storage->setExists($set) ) {
@@ -391,12 +438,13 @@
          * Just a logger
          *
          * @param $text string
-         * @param bool $error
+         * @param bool $error Is this an error?
+         * @param bool $print Do we want to print it?
          */
-        private function log($text, $error = FALSE) {
+        private function log($text, $error = FALSE, $print = TRUE) {
 			$this->log[] = $text;
             if ($error) $this->errors[] = $text;
-			print $text ."\n";
+			if ($print) print $text ."\n";
             $this->writeLogFile($text ."\n");
 		}
 
