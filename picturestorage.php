@@ -17,6 +17,12 @@ class PictureStorage {
     	$this->db = null;
     }
 
+    public function sanitizeString($string) {
+
+
+        return $string;
+    }
+
     public function getPhotos() {
     	return $this->db->query('SELECT * FROM photos');
     }
@@ -28,15 +34,31 @@ class PictureStorage {
     }
 
     public function savePhoto($id, $filename) {
-    	return $this->db->query("INSERT into photos (id, filename) VALUES ('". $id ."', '". $filename ."')");
+        $query = "INSERT into photos (id, filename) VALUES (:id, :filename)";
+    	$sth = $this->db->prepare($query);
+        return $sth->execute(array(
+                    ':id' => $id,
+                    ':filename' => $filename
+                ));
     }
 
     public function saveCollection($id, $collection_name) {
-    	return $this->db->query("INSERT into collections (id, collection_name) VALUES ('". $id ."', '". $collection_name ."')");	
+        $query = "INSERT into collections (id, collection_name) VALUES (:id, :collection_name)";
+        $sth = $this->db->prepare($query);
+        return $sth->execute(array(
+                ':id' => $id,
+                ':collection_name' => $collection_name
+            ));
     }
 
     public function saveSet($id, $set_name, $collection_id) {
-    	return $this->db->query("INSERT into sets (id, setname, collection_id) VALUES ('". $id ."', '". $set_name ."', '". $collection_id ."')");
+        $query = "INSERT into sets (id, setname, collection_id) VALUES (:id, :set_name, :collection_id)";
+        $sth = $this->db->prepare($query);
+        return $sth->execute(array(
+                ':id' => $id,
+                ':set_name' => $set_name,
+                ':collection_id' => $collection_id
+            ));
     }
 
     public function clearData($delete_photos = FALSE) {
@@ -52,18 +74,30 @@ class PictureStorage {
     }
 
     public function collectionExists($collection_name) {
-        $res = $this->db->query('SELECT id FROM collections WHERE collection_name = "'. str_replace("'", "''", $collection_name) .'"');
-        $res->setFetchMode(PDO::FETCH_ASSOC);
-        $col = $res->fetch();
-        return $col['id'];
+        $stmt = $this->db->prepare("SELECT id FROM collections where collection_name = ?");
+        $stmt->execute(array($collection_name));
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch();
+        return $row['id'];
+
+//        $res = $this->db->query('SELECT id FROM collections WHERE collection_name = "'. str_replace("'", "''", $collection_name) .'"');
+//        $res->setFetchMode(PDO::FETCH_ASSOC);
+//        $col = $res->fetch();
+//        return $col['id'];
 
     }
 
     public function setExists($set_name) {
-        $res = $this->db->query('SELECT id FROM sets WHERE setname = "'. str_replace("'", "''", $set_name) .'"');
-        $res->setFetchMode(PDO::FETCH_ASSOC);
-        $col = $res->fetch();
-        return $col['id'];
+        $stmt = $this->db->prepare("SELECT id FROM sets where setname = ?");
+        $stmt->execute(array($set_name));
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch();
+        return $row['id'];
+//
+//        $res = $this->db->query('SELECT id FROM sets WHERE setname = "'. str_replace("'", "''", $set_name) .'"');
+//        $res->setFetchMode(PDO::FETCH_ASSOC);
+//        $col = $res->fetch();
+//        return $col['id'];
     }
 
     public function photoUploaded($filename) {
