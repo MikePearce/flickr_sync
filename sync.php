@@ -55,6 +55,7 @@ else if ($job == "get_collections") {
 	print "Pulled collections and sets\n";
 }
 
-print "\n\n--- These were the errors: \n";
-print $sync->getErrors();
+if ($sync->getErrors() != false) {
+    print "\n\n--- These were errors, please check the log: ". $sync->getLogFile() ." \n";
+}
 print "\n\nfin.\n";

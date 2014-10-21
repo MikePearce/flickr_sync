@@ -102,6 +102,13 @@
         }
 
         /**
+         * @return file
+         */
+        public function getLogFile() {
+            return $this->logfile;
+        }
+
+        /**
          * @param string $root The root of photos you want to upload
          */
         public function setPhotoRoot($root = "../") {
@@ -129,10 +136,10 @@
 
         /**
          * Return all captured errors as string
-         * @return string of errors
+         * @return mixed of errors
          */
         public function getErrors() {
-            $errors = "";
+            $errors = false;
             if (is_array($this->errors)) {
                 foreach($this->errors AS $error) {
                     $errors .= $error ."\n";
@@ -303,8 +310,7 @@
 			// If we had unknown folders (folders that aren't sets) let the user know.
 			if (!empty($no_flickr_collection)) {
 				print "These collections don't exist, you'll need to make it before uploading anything: ". 
-					implode(", ", $no_flickr_collection) .". Photos in these collections were not uploaded. \n\n".
-					"Run: `php -f sync.php get_collections` once you've made the sets.";
+					implode(", ", $no_flickr_collection) .". Photos in these collections were not uploaded. \n\n";
 			}
 			
 		}
