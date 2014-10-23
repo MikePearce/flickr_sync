@@ -250,22 +250,20 @@
 				$filetype = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if (in_array(strtolower($filetype), $filetypes)) {
 
-                    // First, remove the root
-
-
                     // Split the file path into the different parts (unless we can't)
                     if (!$collection = $this->splitPath($file, 'collection')) continue;
-
-
 
                     // If this isn't a specified collection, go to the next one
                     if (isset($this->specificCollection) AND $this->specificCollection !== $collection) continue;
 
                     // It's ON! Let's get the photo
                     $photo = $this->splitPath($file, 'photo');
+                    // Get the set
+                    $set = $this->splitPath($file, 'set');
+                    $set_id = $this->storage->setExists($set);
 
 					// Have we already uploaded the photo?
-					if ($this->storage->photoUploaded($photo)) continue;
+					if ($this->storage->photoUploaded($photo, $set_id)) continue;
 
 					// We haven't, let's check we have a collection...
 					if ( !$collection_id = $this->storage->collectionExists($collection) ) {
@@ -276,11 +274,10 @@
 						continue;
 					}
 
-                    // Get the set
-                    $set = $this->splitPath($file, 'set');
+
 
 					// We have a collection, do we have a set?
-					if ( !$set_id = $this->storage->setExists($set) ) {
+					if ( !$set_id  ) {
 
 						// First, upload this photo, so we have an ID for the primary_photo_id
 						$photo_id = $this->doUploadPhoto($this->photoRoot.$file, $photo);
@@ -295,7 +292,7 @@
 					// We have a set, 
 					else {
 						// so let's upload to it
-						$photo_id = $this->doUploadPhoto($this->photoRoot.$file, $photo);
+						$photo_id = $this->doUploadPhoto($this->photoRoot.$file, $photo, $set_id);
 
 						// Then add to set
 						$this->addPhotoToSet($set_id, $photo_id);
@@ -443,6 +440,7 @@
          */
         private function addPhotoToSet($set_id, $photo_id) {
 			if ($this->debug == "high") $this->log('Added '. $photo_id .' to '. $set_id);
+            $this->storage->updatePhotoWithSet($photo_id, $set_id);
 			return $this->f->photosets_addPhoto($set_id, $photo_id);
 		}
 

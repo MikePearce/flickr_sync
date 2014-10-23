@@ -33,13 +33,23 @@ class PictureStorage {
         return $res->fetchAll();
     }
 
-    public function savePhoto($id, $filename) {
-        $query = "INSERT into photos (id, filename) VALUES (:id, :filename)";
+    public function savePhoto($id, $filename, $set_id = 0) {
+        $query = "INSERT into photos (id, filename, set_id) VALUES (:id, :filename, :set_id)";
     	$sth = $this->db->prepare($query);
         return $sth->execute(array(
-                    ':id' => $id,
-                    ':filename' => $filename
+                    ':id'       => $id,
+                    ':filename' => $filename,
+                    ':set_id'   => $set_id
                 ));
+    }
+
+    public function updatePhotoWithSet($photo_id, $set_id) {
+        $query = "UPDATE photos SET set_id = :set_id WHERE id = :id";
+        $sth = $this->db->prepare($query);
+        return $sth->execute(array(
+                ':id'       => $photo_id,
+                ':set_id'   => $set_id
+            ));
     }
 
     public function saveCollection($id, $collection_name) {
@@ -80,11 +90,6 @@ class PictureStorage {
         $row = $stmt->fetch();
         return $row['id'];
 
-//        $res = $this->db->query('SELECT id FROM collections WHERE collection_name = "'. str_replace("'", "''", $collection_name) .'"');
-//        $res->setFetchMode(PDO::FETCH_ASSOC);
-//        $col = $res->fetch();
-//        return $col['id'];
-
     }
 
     public function setExists($set_name) {
@@ -93,17 +98,14 @@ class PictureStorage {
         $stmt->setFetchMode(PDO::FETCH_ASSOC);
         $row = $stmt->fetch();
         return $row['id'];
-//
-//        $res = $this->db->query('SELECT id FROM sets WHERE setname = "'. str_replace("'", "''", $set_name) .'"');
-//        $res->setFetchMode(PDO::FETCH_ASSOC);
-//        $col = $res->fetch();
-//        return $col['id'];
     }
 
-    public function photoUploaded($filename) {
-        $res = $this->db->query('SELECT id FROM photos WHERE filename = "'. $filename .'"');
-        $res->setFetchMode(PDO::FETCH_ASSOC);
-        return $res->fetch();
+    public function photoUploaded($filename, $set_id) {
+        $stmt = $this->db->prepare("SELECT id FROM photos WHERE filename = ? AND set_id = ?");
+        $stmt->execute(array($filename, $set_id));
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        return $stmt->fetch();
+
     }    
 
 
