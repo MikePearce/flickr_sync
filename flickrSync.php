@@ -194,9 +194,6 @@
 
         public function splitPath($file, $part) {
 
-            // First, remove the root
-            $file = str_replace($this->photoRoot, "", $file);
-
             // For each file break it into ../[collection]/[set]/[photo]
             $file_array = explode("/", $file);
 
@@ -243,14 +240,23 @@
 			$sets = array();
 
 			foreach( new RecursiveIteratorIterator($photos) as $file ) {
+
+                // Before we do anything, check this isn't an ignored folder
+                $file = str_replace($this->photoRoot, "", $file);
+                $basename = explode('/', $file);
+                if (in_array($basename[0], $this->ignores)) continue;
+
+                // Get and check filetype
 				$filetype = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if (in_array(strtolower($filetype), $filetypes)) {
+
+                    // First, remove the root
+
 
                     // Split the file path into the different parts (unless we can't)
                     if (!$collection = $this->splitPath($file, 'collection')) continue;
 
-                    // If this is an ignored collection, go to the next one
-                    if (in_array($collection, $this->ignores)) continue;
+
 
                     // If this isn't a specified collection, go to the next one
                     if (isset($this->specificCollection) AND $this->specificCollection !== $collection) continue;
